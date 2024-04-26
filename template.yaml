@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  YoutubeHashtagGenerator
+
+  Sample SAM Template for YoutubeHashtagGenerator
+
+Globals:
+  Function:
+    Timeout: 3
+    MemorySize: 128
+
+    LoggingConfig:
+      LogFormat: JSON
+Resources:
+  YouTubeTagsGeneratorFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: main/
+      Handler: app.lambda_handler
+      Runtime: python3.12
+      Architectures:
+      - x86_64
+      Events:
+        YouTube-Tags-Generator:
+          Type: Api 
+          Properties:
+            Path: /YoutubeHashtagGenerator
+            Method: get
+
+  ApplicationResourceGroup:
+    Type: AWS::ResourceGroups::Group
+    Properties:
+      Name:
+        Fn::Sub: ApplicationInsights-SAM-${AWS::StackName}
+      ResourceQuery:
+        Type: CLOUDFORMATION_STACK_1_0
+  ApplicationInsightsMonitoring:
+    Type: AWS::ApplicationInsights::Application
+    Properties:
+      ResourceGroupName:
+        Ref: ApplicationResourceGroup
+      AutoConfigurationEnabled: 'true'
+Outputs:
+
+  YouTube-Tags-GeneratorApi:
+    Description: API Gateway endpoint URL for Prod stage for YoutubeHashtagGenerator function
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  YouTube-Tags-GeneratorFunction:
+    Description: YoutubeHashtagGenerator Lambda Function ARN
+    Value: !GetAtt YouTube-Tags-GeneratorFunction.Arn
+  YouTube-Tags-GeneratorFunctionIamRole:
+    Description: Implicit IAM Role created for YoutubeHashtagGenerator function
+    Value: !GetAtt YouTube-Tags-GeneratorFunctionRole.Arn
